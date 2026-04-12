@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,36 @@ import {
 } from 'react-native';
 import { Search, MapPin, Heart, Moon, User } from 'lucide-react-native';
 
-export default function HomeScreen({ houses, favorites, onToggleFavorite }: any) {
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebaseConfig'; 
+
+export default function HomeScreen({ favorites, onToggleFavorite }: any) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [houses, setHouses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'houses'));
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setHouses(data);
+      } catch (e) {
+        console.log('error fetching houses:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHouses();
+  }, []);
 
   const filteredHouses = houses.filter((h: any) => {
     const matchSearch =
@@ -27,6 +54,15 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
 
     return matchSearch && matchFilter;
   });
+
+ 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -50,7 +86,7 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
           </View>
         </View>
 
-        {/* Search */}
+       
         <View style={styles.searchBox}>
           <Search size={18} color="#666" />
 
@@ -68,7 +104,7 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
         </View>
       </View>
 
-      {/* Filters */}
+      
       <View style={styles.filters}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {['all', 'single', 'shared'].map((f) => (
@@ -97,7 +133,6 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
         </ScrollView>
       </View>
 
-      {/* List */}
       <ScrollView contentContainerStyle={styles.list}>
         {filteredHouses.map((house: any) => (
           <TouchableOpacity
@@ -111,16 +146,13 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
               })
             }
           >
+           
             <Image
-              source={
-                typeof house.image === 'string'
-                  ? { uri: house.image }
-                  : house.image
-              }
+              source={{ uri: house.image }}
               style={styles.image}
             />
 
-            {/* Favorite */}
+            
             <TouchableOpacity
               style={styles.fav}
               onPress={() => onToggleFavorite(house.id)}
@@ -132,7 +164,7 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
               />
             </TouchableOpacity>
 
-            {/* Info */}
+          
             <View style={styles.info}>
               <Text style={styles.houseName}>{house.title}</Text>
               <Text style={styles.price}>{house.price}</Text>

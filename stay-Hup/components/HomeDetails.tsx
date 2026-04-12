@@ -35,28 +35,33 @@ export default function DetailsScreen({
 
   const handleCall = async () => {
     const url = `tel:${house.landlord.phone}`;
-    if (await Linking.canOpenURL(url)) {
-      Linking.openURL(url);
-    }
+    const ok = await Linking.canOpenURL(url);
+    if (ok) Linking.openURL(url);
   };
 
   const handleWhatsApp = async () => {
     const phone = house.landlord.whatsapp.replace('+', '');
     const url = `https://wa.me/${phone}`;
-    if (await Linking.canOpenURL(url)) {
-      Linking.openURL(url);
-    }
+    const ok = await Linking.canOpenURL(url);
+    if (ok) Linking.openURL(url);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
 
-        {/* Image */}
+        
         <View style={styles.imageBox}>
-          <Image source={house.image} style={styles.image} />
+          <Image
+            source={
+              typeof house.image === 'string'
+                ? { uri: house.image }   
+                : house.image           
+            }
+            style={styles.image}
+          />
 
-          {/* Top buttons */}
+          
           <View style={styles.topBtns}>
             <TouchableOpacity style={styles.circleBtn} onPress={onBack}>
               <ArrowLeft size={20} color="#111" />
@@ -71,13 +76,13 @@ export default function DetailsScreen({
             </TouchableOpacity>
           </View>
 
-          {/* Type */}
+         
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{house.type}</Text>
           </View>
         </View>
 
-        {/* Content */}
+        
         <View style={styles.content}>
 
           <View style={styles.rowBetween}>
@@ -146,7 +151,6 @@ export default function DetailsScreen({
         </View>
       </ScrollView>
 
-      {/* Bottom buttons */}
       <View style={styles.bottom}>
         <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
           <Phone size={18} color="#2563EB" />

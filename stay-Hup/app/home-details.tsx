@@ -1,11 +1,16 @@
 import { useLocalSearchParams, router } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
 import HomeDetails from '../components/HomeDetails';
 
 export default function Page() {
   const { house } = useLocalSearchParams();
 
-  const houses = [
+  const [selectedHouse, setSelectedHouse] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+ 
+  const localHouses = [
     {
       id: '1',
       title: 'Single Student Room',
@@ -50,9 +55,24 @@ export default function Page() {
     },
   ];
 
-  const selectedHouse = houses.find((h) => h.id === house);
+  
+  useEffect(() => {
+    const loadHouse = async () => {
+      try {
+       
+        const found = localHouses.find((h) => h.id === house);
+        setSelectedHouse(found);
+      } catch (e) {
+        console.log('error:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!selectedHouse) {
+    loadHouse();
+  }, [house]);
+
+  if (loading || !selectedHouse) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
