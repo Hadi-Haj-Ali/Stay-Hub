@@ -12,18 +12,18 @@ import {
 import { Search, MapPin, Heart, Moon, User } from 'lucide-react-native';
 
 export default function HomeScreen({ houses, favorites, onToggleFavorite }: any) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
-  const filtered = houses.filter((h: any) => {
+  const filteredHouses = houses.filter((h: any) => {
     const matchSearch =
-      h.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      h.location.toLowerCase().includes(searchQuery.toLowerCase());
+      h.title.toLowerCase().includes(search.toLowerCase()) ||
+      h.location.toLowerCase().includes(search.toLowerCase());
 
-   const matchFilter =
-  activeFilter === 'all' ||
-  (activeFilter === 'single' && h.title.toLowerCase().includes('single')) ||
-  (activeFilter === 'shared' && h.title.toLowerCase().includes('shared'));
+    const matchFilter =
+      filter === 'all' ||
+      (filter === 'single' && h.title.toLowerCase().includes('single')) ||
+      (filter === 'shared' && h.title.toLowerCase().includes('shared'));
 
     return matchSearch && matchFilter;
   });
@@ -31,91 +31,84 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
   return (
     <View style={styles.container}>
       
-     
-      <View style={styles.topHeader}>
-        <View style={styles.headerRow}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.topRow}>
           <View>
-            <Text style={styles.greeting}>Good Morning!</Text>
-            <Text style={styles.subText}>Find your perfect house today</Text>
+            <Text style={styles.title}>Good Morning!</Text>
+            <Text style={styles.sub}>Find your place</Text>
           </View>
 
           <View style={styles.icons}>
-            <TouchableOpacity
-    onPress={() => console.log('Dark Mode Click')}
-  >
-    <Moon size={20} color="#fff" style={{ marginRight: 14 }} />
-  </TouchableOpacity>
+            <TouchableOpacity onPress={() => console.log('dark')}>
+              <Moon size={20} color="#fff" style={{ marginRight: 14 }} />
+            </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() => router.push('/profile')}
-  >
-    <User size={20} color="#fff" />
-  </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/profile')}>
+              <User size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.searchContainer}>
-          <Search size={18} color="#6B7280" />
+        {/* Search */}
+        <View style={styles.searchBox}>
+          <Search size={18} color="#666" />
 
           <TextInput
-            placeholder="Search by location, price, or type..."
-            placeholderTextColor="#6B7280"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
+            placeholder="Search..."
+            placeholderTextColor="#888"
+            value={search}
+            onChangeText={setSearch}
+            style={styles.input}
           />
 
-          <View style={styles.filterBtn}>
+          <View style={styles.smallBtn}>
             <Text style={{ color: '#fff' }}>⚙️</Text>
           </View>
         </View>
       </View>
 
-      {/* 🟣 FILTERS */}
-      <View style={styles.filtersWrapper}>
+      {/* Filters */}
+      <View style={styles.filters}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          
-          {['all', 'single', 'shared'].map((type) => (
+          {['all', 'single', 'shared'].map((f) => (
             <TouchableOpacity
-              key={type}
+              key={f}
               style={[
-                styles.filterChip,
-                activeFilter === type && styles.activeFilterChip,
+                styles.chip,
+                filter === f && styles.activeChip,
               ]}
-              onPress={() => setActiveFilter(type)}
+              onPress={() => setFilter(f)}
             >
               <Text
                 style={[
-                  styles.filterChipText,
-                  activeFilter === type && styles.activeFilterChipText,
+                  styles.chipText,
+                  filter === f && styles.activeText,
                 ]}
               >
-                {type === 'all'
+                {f === 'all'
                   ? 'All'
-                  : type === 'single'
+                  : f === 'single'
                   ? 'Single Room'
                   : 'Shared Room'}
               </Text>
             </TouchableOpacity>
           ))}
-
         </ScrollView>
       </View>
 
-      
-      <ScrollView contentContainerStyle={styles.listContent}>
-        {filtered.map((house: any) => (
+      {/* List */}
+      <ScrollView contentContainerStyle={styles.list}>
+        {filteredHouses.map((house: any) => (
           <TouchableOpacity
             key={house.id}
             style={styles.card}
             activeOpacity={0.9}
             onPress={() =>
               router.push({
-  pathname: '/home-details',
-  params: {
-    house: house.id,
-  },
-})
+                pathname: '/home-details',
+                params: { house: house.id },
+              })
             }
           >
             <Image
@@ -127,6 +120,7 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
               style={styles.image}
             />
 
+            {/* Favorite */}
             <TouchableOpacity
               style={styles.fav}
               onPress={() => onToggleFavorite(house.id)}
@@ -138,37 +132,37 @@ export default function HomeScreen({ houses, favorites, onToggleFavorite }: any)
               />
             </TouchableOpacity>
 
+            {/* Info */}
             <View style={styles.info}>
-              <Text style={styles.name}>{house.title}</Text>
+              <Text style={styles.houseName}>{house.title}</Text>
               <Text style={styles.price}>{house.price}</Text>
 
               <View style={styles.row}>
                 <MapPin size={14} color="#777" />
-                <Text style={styles.distance}>{house.distance}</Text>
+                <Text style={styles.text}>{house.distance}</Text>
               </View>
 
-              <Text style={styles.location}>{house.location}</Text>
+              <Text style={styles.text}>{house.location}</Text>
             </View>
           </TouchableOpacity>
         ))}
 
-        {filtered.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No housing found</Text>
+        {filteredHouses.length === 0 && (
+          <View style={styles.empty}>
+            <Text>No results</Text>
           </View>
         )}
       </ScrollView>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
 
-  topHeader: {
+  header: {
     backgroundColor: '#2F4CB3',
     paddingTop: 60,
     paddingHorizontal: 16,
@@ -177,20 +171,19 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
 
-  headerRow: {
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
 
-  greeting: {
+  title: {
     color: '#fff',
     fontSize: 22,
     fontWeight: '700',
   },
 
-  subText: {
-    color: '#D1D5DB',
+  sub: {
+    color: '#ddd',
     marginTop: 4,
   },
 
@@ -198,68 +191,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
 
-  searchContainer: {
+  searchBox: {
     marginTop: 20,
     backgroundColor: '#E5E7EB',
-    borderRadius: 16,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    height: 50,
+    paddingHorizontal: 10,
+    height: 48,
   },
 
-  searchInput: {
+  input: {
     flex: 1,
     marginLeft: 8,
   },
 
-  filterBtn: {
+  smallBtn: {
     backgroundColor: '#2F4CB3',
-    padding: 10,
-    borderRadius: 12,
+    padding: 8,
+    borderRadius: 10,
   },
 
-  
-  filtersWrapper: {
-    paddingVertical: 12,
-    paddingLeft: 16,
+  filters: {
+    padding: 12,
   },
 
-  filterChip: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 999,
-    backgroundColor: '#FFFFFF',
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginRight: 10,
+    borderColor: '#eee',
   },
 
-  activeFilterChip: {
+  activeChip: {
     backgroundColor: '#2F4CB3',
-    borderColor: '#2F4CB3',
   },
 
-  filterChipText: {
-    color: '#374151',
-    fontWeight: '600',
+  chipText: {
+    color: '#333',
   },
 
-  activeFilterChipText: {
-    color: '#FFFFFF',
+  activeText: {
+    color: '#fff',
   },
 
-  listContent: {
+  list: {
     padding: 16,
     paddingBottom: 100,
   },
 
   card: {
-    marginBottom: 14,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 12,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
   },
 
   image: {
@@ -271,23 +260,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#FFFFFF',
-    padding: 8,
+    backgroundColor: '#fff',
+    padding: 6,
     borderRadius: 20,
   },
 
   info: {
-    padding: 12,
+    padding: 10,
   },
 
-  name: {
+  houseName: {
     fontWeight: '700',
-    fontSize: 16,
   },
 
   price: {
     color: '#2563EB',
-    marginVertical: 4,
+    marginVertical: 3,
   },
 
   row: {
@@ -295,22 +283,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  distance: {
+  text: {
     marginLeft: 4,
-    color: '#6B7280',
+    color: '#666',
   },
 
-  location: {
-    color: '#6B7280',
-  },
-
-  emptyState: {
+  empty: {
     marginTop: 40,
     alignItems: 'center',
-  },
-
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
   },
 });
