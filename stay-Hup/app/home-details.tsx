@@ -1,7 +1,7 @@
 import { useLocalSearchParams, router } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
-import HomeDetails from '../components/HomeDetails';
+import HomeDetails from '../components/Screens/HomeDetails';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
