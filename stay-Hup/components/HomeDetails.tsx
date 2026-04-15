@@ -18,13 +18,19 @@ import {
   Star,
 } from 'lucide-react-native';
 
-export default function DetailsScreen({
+type HomeDetailsProps = {
+  house: any;
+  onBack: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+};
+
+export default function HomeDetails({
   house,
   onBack,
   isFavorite,
   onToggleFavorite,
-}: any) {
-
+}: HomeDetailsProps) {
   if (!house) {
     return (
       <SafeAreaView style={styles.center}>
@@ -33,35 +39,48 @@ export default function DetailsScreen({
     );
   }
 
-  const handleCall = async () => {
-    const url = `tel:${house.landlord.phone}`;
-    const ok = await Linking.canOpenURL(url);
-    if (ok) Linking.openURL(url);
-  };
+ const handleCall = async () => {
+  const phone = house.phone;
+
+  if (!phone) {
+    console.log('No phone number');
+    return;
+  }
+
+  const url = `tel:${phone}`;
+  const ok = await Linking.canOpenURL(url);
+  if (ok) Linking.openURL(url);
+};
 
   const handleWhatsApp = async () => {
-    const phone = house.landlord.whatsapp.replace('+', '');
-    const url = `https://wa.me/${phone}`;
-    const ok = await Linking.canOpenURL(url);
-    if (ok) Linking.openURL(url);
-  };
+  const phone = String(house.phone).replace(/\D/g, '');
 
+  if (!phone) {
+    console.log('No phone number');
+    return;
+  }
+
+  const url = `https://wa.me/${phone}`;
+
+  try {
+    await Linking.openURL(url);
+  } catch (e) {
+    console.log('WhatsApp error:', e);
+  }
+};
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
-
-        
         <View style={styles.imageBox}>
           <Image
             source={
               typeof house.image === 'string'
-                ? { uri: house.image }   
-                : house.image           
+                ? { uri: house.image }
+                : house.image
             }
             style={styles.image}
           />
 
-          
           <View style={styles.topBtns}>
             <TouchableOpacity style={styles.circleBtn} onPress={onBack}>
               <ArrowLeft size={20} color="#111" />
@@ -76,15 +95,12 @@ export default function DetailsScreen({
             </TouchableOpacity>
           </View>
 
-         
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{house.type}</Text>
+            <Text style={styles.badgeText}>{house.type || 'Room'}</Text>
           </View>
         </View>
 
-        
         <View style={styles.content}>
-
           <View style={styles.rowBetween}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{house.title}</Text>
@@ -92,7 +108,7 @@ export default function DetailsScreen({
               <View style={styles.row}>
                 <MapPin size={14} color="#666" />
                 <Text style={styles.smallText}>
-                  {house.distance} • {house.location}
+                  {house.distance || ''}{house.distance ? ' • ' : ''}{house.location}
                 </Text>
               </View>
             </View>
@@ -106,47 +122,56 @@ export default function DetailsScreen({
           <View style={styles.row}>
             <Star size={14} color="#F59E0B" fill="#F59E0B" />
             <Text style={styles.smallText}>
-              {house.reviews.rating} ({house.reviews.count})
+              {house.reviews?.rating ?? house.rating ?? 0} ({house.reviews?.count ?? 0})
             </Text>
           </View>
 
           <Text style={styles.section}>Description</Text>
-          <Text style={styles.desc}>{house.description}</Text>
+          <Text style={styles.desc}>{house.description || 'No description'}</Text>
 
           <Text style={styles.section}>Amenities</Text>
           <View style={styles.wrap}>
-            {house.amenities.map((item: any) => (
-              <View key={item} style={styles.tag}>
-                <Text>{item}</Text>
+            {house.amenities?.length ? (
+              house.amenities.map((item: string) => (
+                <View key={item} style={styles.tag}>
+                  <Text>{item}</Text>
+                </View>
+              ))
+            ) : house.beds ? (
+              <View style={styles.tag}>
+                <Text>{house.beds} Beds</Text>
               </View>
-            ))}
+            ) : (
+              <Text style={styles.smallText}>No amenities</Text>
+            )}
           </View>
 
           <Text style={styles.section}>Owner</Text>
           <View style={styles.ownerBox}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                {house.landlord.name.charAt(0)}
+                {(house.landlord?.name || house.ownerName || 'O').charAt(0)}
               </Text>
             </View>
 
             <View>
-              <Text style={styles.ownerName}>{house.landlord.name}</Text>
+              <Text style={styles.ownerName}>
+                {house.landlord?.name || house.ownerName || 'Owner'}
+              </Text>
               <Text style={styles.smallText}>Owner</Text>
             </View>
           </View>
 
           <Text style={styles.section}>Reviews</Text>
-
-          {house.reviews.comments.length === 0 ? (
-            <Text style={styles.smallText}>No reviews yet</Text>
-          ) : (
+          {house.reviews?.comments?.length ? (
             house.reviews.comments.map((r: any, i: number) => (
               <View key={i} style={styles.review}>
                 <Text style={styles.reviewUser}>{r.user}</Text>
                 <Text style={styles.smallText}>{r.comment}</Text>
               </View>
             ))
+          ) : (
+            <Text style={styles.smallText}>No reviews yet</Text>
           )}
         </View>
       </ScrollView>
@@ -165,32 +190,28 @@ export default function DetailsScreen({
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   emptyText: {
     fontSize: 18,
     color: '#666',
   },
-
   imageBox: {
     position: 'relative',
   },
-
   image: {
     width: '100%',
     height: 260,
   },
-
   topBtns: {
     position: 'absolute',
     top: 15,
@@ -199,13 +220,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-
   circleBtn: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 20,
   },
-
   badge: {
     position: 'absolute',
     bottom: 15,
@@ -214,73 +233,60 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 20,
   },
-
   badgeText: {
     color: '#fff',
     fontWeight: '600',
   },
-
   content: {
     padding: 16,
   },
-
   title: {
     fontSize: 22,
     fontWeight: '700',
   },
-
   price: {
     color: '#2563EB',
     fontSize: 18,
     fontWeight: '700',
   },
-
   section: {
     marginTop: 15,
     fontWeight: '700',
     fontSize: 16,
   },
-
   desc: {
     color: '#444',
     marginTop: 4,
   },
-
   smallText: {
     color: '#666',
     marginLeft: 5,
   },
-
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 5,
   },
-
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-
   wrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 5,
   },
-
   tag: {
     backgroundColor: '#eee',
     padding: 6,
     borderRadius: 8,
     margin: 4,
   },
-
   ownerBox: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
   },
-
   avatar: {
     width: 40,
     height: 40,
@@ -290,27 +296,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-
   avatarText: {
     color: '#fff',
     fontWeight: '700',
   },
-
   ownerName: {
     fontWeight: '700',
   },
-
   review: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 10,
     marginTop: 5,
   },
-
   reviewUser: {
     fontWeight: '600',
   },
-
   bottom: {
     position: 'absolute',
     bottom: 0,
@@ -319,7 +320,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
   },
-
   callBtn: {
     flex: 1,
     borderWidth: 1,
@@ -331,11 +331,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 5,
   },
-
   callText: {
     color: '#2563EB',
   },
-
   whatsappBtn: {
     flex: 1,
     backgroundColor: '#16A34A',
@@ -347,7 +345,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     gap: 5,
   },
-
   whatsappText: {
     color: '#fff',
   },

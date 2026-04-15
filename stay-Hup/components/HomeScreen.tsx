@@ -24,7 +24,7 @@ export default function HomeScreen({ favorites, onToggleFavorite }: any) {
   useEffect(() => {
     const fetchHouses = async () => {
       try {
-        const snapshot = await getDocs(collection(db, 'houses'));
+        const snapshot = await getDocs(collection(db, 'housing'));
 
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,

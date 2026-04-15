@@ -2,12 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyAOcIauQ7QdmHPoiV3W15SLsEZ1AuN3Zz4",
+  authDomain: "stay-hub-563b9.firebaseapp.com",
+  projectId: "stay-hub-563b9",
+  storageBucket: "stay-hub-563b9.firebasestorage.app",
+  messagingSenderId: "873532917201",
+  appId: "1:873532917201:web:2b457a4fec1974f942ccf0"
 };
 
 const app = initializeApp(firebaseConfig);
