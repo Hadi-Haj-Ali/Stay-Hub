@@ -7,15 +7,12 @@ import DetailsHeader from '../ui/DetailsHeader';
 type HomeDetailsProps = {
   house: any;
   onBack: () => void;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
+  
 };
 
 export default function HomeDetails({
   house,
   onBack,
-  isFavorite,
-  onToggleFavorite,
 }: HomeDetailsProps) {
   if (!house) {
     return (

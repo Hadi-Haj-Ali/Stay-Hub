@@ -5,7 +5,6 @@ import { ArrowLeft, Heart } from 'lucide-react-native';
 type Props = {
   house: any;
   onBack: () => void;
- 
 };
 
 export default function DetailsHeader({
