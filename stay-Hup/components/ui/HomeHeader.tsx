@@ -9,19 +9,30 @@ import {
 import { Search, Moon, User } from 'lucide-react-native';
 import { router } from 'expo-router';
 
-export default function HomeHeader({ search, setSearch }: any) {
+type Props = {
+  search: string;
+  setSearch: (text: string) => void;
+};
+
+export default function HomeHeader({ search, setSearch }: Props) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning!' : 'Good Evening!';
+
   return (
     <View style={styles.header}>
       <View style={styles.topRow}>
         <View>
-          <Text style={styles.title}>Good Morning!</Text>
+          <Text style={styles.title}>{greeting}</Text>
           <Text style={styles.sub}>Find your place</Text>
         </View>
 
+
         <View style={styles.icons}>
-          <TouchableOpacity>
+          {/*<TouchableOpacity>
             <Moon size={20} color="#fff" style={{ marginRight: 14 }} />
           </TouchableOpacity>
+          */}
+          
 
           <TouchableOpacity onPress={() => router.push('/profile')}>
             <User size={20} color="#fff" />
@@ -39,8 +50,6 @@ export default function HomeHeader({ search, setSearch }: any) {
           onChangeText={setSearch}
           style={styles.input}
         />
-
-      
       </View>
     </View>
   );
