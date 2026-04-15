@@ -1,9 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MapPin, Star } from 'lucide-react-native';
-
+import { MapPin, Star, Wifi, Car, Utensils, Snowflake, Dumbbell } from 'lucide-react-native';
+import ReviewsSection from './ReviewsSection';
 type Props = {
   house: any;
+};
+
+const amenityIcons: Record<string, React.ReactNode> = {
+  Wifi: <Wifi size={16} color="#2563EB" />,
+  Parking: <Car size={16} color="#2563EB" />,
+  Kitchen: <Utensils size={16} color="#2563EB" />,
+  AC: <Snowflake size={16} color="#2563EB" />,
+  Gym: <Dumbbell size={16} color="#2563EB" />,
 };
 
 export default function DetailsContent({ house }: Props) {
@@ -40,18 +48,23 @@ export default function DetailsContent({ house }: Props) {
       <Text style={styles.desc}>{house.description || 'No description'}</Text>
 
       <Text style={styles.section}>Amenities</Text>
-      <View style={styles.wrap}>
+      <View style={styles.amenitiesGrid}>
         {house.amenities?.length ? (
-          house.amenities.map((item: string) => (
-            <View key={item} style={styles.tag}>
-              <Text>{item}</Text>
+          house.amenities.map((item: string, index: number) => (
+            <View key={`${item}-${index}`} style={styles.amenityCard}>
+              <View style={styles.iconWrap}>
+                {amenityIcons[item] || <Text style={styles.iconFallback}>•</Text>}
+              </View>
+              <Text style={styles.amenityText}>{item}</Text>
             </View>
           ))
         ) : house.beds ? (
-          <View style={styles.tag}>
-            <Text>{house.beds} Beds</Text>
+          <View style={styles.amenityCard}>
+            <View style={styles.iconWrap}>
+              <Text style={styles.iconFallback}>•</Text>
+            </View>
+            <Text style={styles.amenityText}>{house.beds} Beds</Text>
           </View>
-
         ) : (
           <Text style={styles.smallText}>No amenities</Text>
         )}
@@ -73,17 +86,9 @@ export default function DetailsContent({ house }: Props) {
         </View>
       </View>
 
-      <Text style={styles.section}>Reviews</Text>
-      {house.reviews?.comments?.length ? (
-        house.reviews.comments.map((r: any, i: number) => (
-          <View key={i} style={styles.review}>
-            <Text style={styles.reviewUser}>{r.user}</Text>
-            <Text style={styles.smallText}>{r.comment}</Text>
-          </View>
-        ))
-      ) : (
-        <Text style={styles.smallText}>No reviews yet</Text>
-      )}
+   <ReviewsSection house={house} />
+
+    
     </View>
   );
 }
@@ -134,6 +139,35 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     margin: 4,
   },
+  amenitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  amenityCard: {
+    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  iconWrap: {
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconFallback: {
+    color: '#2563EB',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  amenityText: {
+    color: '#111827',
+    fontSize: 14,
+  },
   ownerBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -154,14 +188,5 @@ const styles = StyleSheet.create({
   },
   ownerName: {
     fontWeight: '700',
-  },
-  review: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 5,
-  },
-  reviewUser: {
-    fontWeight: '600',
   },
 });
