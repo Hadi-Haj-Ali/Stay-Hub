@@ -1,21 +1,30 @@
 import { auth, db } from '@/firebaseConfig';
 import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    where,
+} from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
-import ProfileHeader from '../ui/ProfileHeader';
-import ProfileSettingRow from '../ui/ProfileSettingRow';
-import ProfileStatCard from '../ui/ProfileStatCard';
+import ProfileHeader from '../ui/Profile-ui/ProfileHeader';
+import ProfileInfoCard from '../ui/Profile-ui/ProfileInfoCard';
+import ProfileRequestsCard, { PendingHouse } from '../ui/Profile-ui/ProfileRequestsCard';
+import ProfileSettingsCard from '../ui/Profile-ui/ProfileSettingsCard';
+import ProfileStatCard from '../ui/Profile-ui/ProfileStatCard';
 
 type UserData = {
   name: string;
@@ -26,6 +35,7 @@ type UserData = {
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
+  const [pendingHouses, setPendingHouses] = useState<PendingHouse[]>([]);
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -37,6 +47,22 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUser();
   }, []);
+
+  const loadPendingHouses = async (uid: string) => {
+    const q = query(
+      collection(db, 'pending_housing'),
+      where('ownerId', '==', uid)
+    );
+
+    const snapshot = await getDocs(q);
+
+    const data = snapshot.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    })) as PendingHouse[];
+
+    setPendingHouses(data);
+  };
 
   const loadUser = async () => {
     const user = auth.currentUser;
@@ -67,6 +93,8 @@ export default function ProfileScreen() {
           role: 'student',
         });
       }
+
+      await loadPendingHouses(user.uid);
     } catch (error) {
       Alert.alert('Error', 'Could not load profile');
     } finally {
@@ -116,39 +144,11 @@ export default function ProfileScreen() {
           <ProfileStatCard number="4.8★" label="Rating" />
         </View>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.sectionTitle}>Account Information</Text>
+        <ProfileInfoCard userData={userData} />
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Full Name</Text>
-            <Text style={styles.infoValue}>{userData.name || '-'}</Text>
-          </View>
+        <ProfileRequestsCard houses={pendingHouses} />
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{userData.email || '-'}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoValue}>{userData.phone || '-'}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Account Type</Text>
-            <Text style={styles.infoValue}>{userData.role || 'student'}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.settingsTitle}>Settings</Text>
-
-        <View style={styles.settingsCard}>
-          <ProfileSettingRow title="Edit Profile" type="edit" />
-          <ProfileSettingRow title="Notifications" type="notifications" />
-          <ProfileSettingRow title="Privacy & Security" type="privacy" />
-          <ProfileSettingRow title="Help & Support" type="help" />
-          <ProfileSettingRow title="Sign Out" type="logout" onPress={logout} />
-        </View>
+        <ProfileSettingsCard onLogout={logout} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -166,49 +166,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     marginBottom: 22,
-  },
-  infoCard: {
-    backgroundColor: '#FFF',
-    marginHorizontal: 20,
-    borderRadius: 20,
-    padding: 18,
-    elevation: 3,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  infoRow: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEF2F7',
-  },
-  infoLabel: {
-    color: '#64748B',
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  infoValue: {
-    color: '#111827',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  settingsTitle: {
-    fontSize: 19,
-    fontWeight: '800',
-    color: '#111827',
-    marginHorizontal: 20,
-    marginBottom: 12,
-  },
-  settingsCard: {
-    backgroundColor: '#FFF',
-    marginHorizontal: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 3,
   },
   center: {
     flex: 1,

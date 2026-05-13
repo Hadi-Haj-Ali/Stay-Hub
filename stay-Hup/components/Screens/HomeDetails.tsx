@@ -1,8 +1,8 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
-import DetailsBottomBar from '../ui/DetailsBottomBar';
-import DetailsContent from '../ui/DetailsContent';
-import DetailsHeader from '../ui/DetailsHeader';
+import DetailsBottomBar from '../ui/HomeDetail-ui/DetailsBottomBar';
+import DetailsContent from '../ui/HomeDetail-ui/DetailsContent';
+import DetailsHeader from '../ui/HomeDetail-ui/DetailsHeader';
 
 type HomeDetailsProps = {
   house: any;

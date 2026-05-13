@@ -15,9 +15,9 @@ import {
   Text,
 } from 'react-native';
 
-import LoginHeader from '../ui/LoginHeader';
-import LoginForm from '../ui/LoginForm';
-import { LoginMode } from '../ui/LoginTabs';
+import LoginHeader from '../ui/Login-ui/LoginHeader';
+import LoginForm from '../ui/Login-ui/LoginForm';
+import { LoginMode } from '../ui/Login-ui/LoginTabs';
 
 export default function AuthScreen() {
   const [mode, setMode] = useState<LoginMode>('signin');

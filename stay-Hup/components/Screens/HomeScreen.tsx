@@ -3,9 +3,9 @@ import { collection, getDocs } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import FilterChips from '../ui/FilterChips';
-import HomeHeader from '../ui/HomeHeader';
-import HouseList from '../ui/HouseList';
+import FilterChips from '../ui/HomeScreen-ui/FilterChips';
+import HomeHeader from '../ui/HomeScreen-ui/HomeHeader';
+import HouseList from '../ui/HomeScreen-ui/HouseList';
 
 export default function HomeScreen({ favorites, onToggleFavorite }: any) {
   const [search, setSearch] = useState('');
