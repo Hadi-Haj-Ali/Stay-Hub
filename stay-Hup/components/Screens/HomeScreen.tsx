@@ -17,10 +17,12 @@ export default function HomeScreen({ favorites, onToggleFavorite }: any) {
     const fetchHouses = async () => {
       try {
         const snapshot = await getDocs(collection(db, 'housing'));
+
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
         setHouses(data);
       } catch (e) {
         console.log(e);
@@ -33,14 +35,17 @@ export default function HomeScreen({ favorites, onToggleFavorite }: any) {
   }, []);
 
   const filtered = houses.filter((h: any) => {
+    const title = h.title || '';
+    const location = h.location || '';
+    const type = h.type || '';
+
     const matchSearch =
-      h.title.toLowerCase().includes(search.toLowerCase()) ||
-      h.location.toLowerCase().includes(search.toLowerCase());
+      title.toLowerCase().includes(search.toLowerCase()) ||
+      location.toLowerCase().includes(search.toLowerCase());
 
     const matchFilter =
       filter === 'all' ||
-      (filter === 'single' && h.title.toLowerCase().includes('single')) ||
-      (filter === 'shared' && h.title.toLowerCase().includes('shared'));
+      type.toLowerCase() === filter.toLowerCase();
 
     return matchSearch && matchFilter;
   });

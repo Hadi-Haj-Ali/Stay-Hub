@@ -15,7 +15,6 @@ import {
   Text,
 } from 'react-native';
 
-import GuestButton from '../ui/GuestButton';
 import LoginHeader from '../ui/LoginHeader';
 import LoginForm from '../ui/LoginForm';
 import { LoginMode } from '../ui/LoginTabs';
@@ -90,7 +89,13 @@ export default function AuthScreen() {
       clearInputs();
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error', getAuthErrorMessage(error.code));
+      console.log('AUTH ERROR CODE:', error.code);
+      console.log('AUTH ERROR MESSAGE:', error.message);
+
+      Alert.alert(
+        'Error',
+        `${error.code || 'unknown'}\n${error.message || 'No message'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -128,8 +133,6 @@ export default function AuthScreen() {
           loading={loading}
           onSubmit={handleSubmit}
         />
-
-        <GuestButton onPress={() => router.replace('/(tabs)')} />
 
         <Text style={styles.terms}>
           By continuing, you agree to our Terms of Service and Privacy Policy
