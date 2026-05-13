@@ -1,20 +1,25 @@
-import { useLocalSearchParams, router } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import HomeDetails from '../components/Screens/HomeDetails';
+import { db } from '@/firebaseConfig';
+import HomeDetails from '@/components/Screens/HomeDetails';
+import { router, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View, Text } from 'react-native';
 
 export default function Page() {
-  const { house } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
 
   const [selectedHouse, setSelectedHouse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadHouse = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const docRef = doc(db, 'housing', String(house));
+        const docRef = doc(db, 'housing', String(id));
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -25,24 +30,28 @@ export default function Page() {
         } else {
           console.log('House not found');
         }
-      } catch (e) {
-        console.log('error:', e);
+      } catch (error) {
+        console.log('Error loading house:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (house) {
-      loadHouse();
-    } else {
-      setLoading(false);
-    }
-  }, [house]);
+    loadHouse();
+  }, [id]);
 
-  if (loading || !selectedHouse) {
+  if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!selectedHouse) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>No house details found</Text>
       </View>
     );
   }
@@ -51,8 +60,6 @@ export default function Page() {
     <HomeDetails
       house={selectedHouse}
       onBack={() => router.back()}
-      isFavorite={false}
-      onToggleFavorite={() => {}}
     />
   );
 }

@@ -2,7 +2,7 @@ import { Lock, Mail, Phone, User } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import LoginButton from './Login-ui/LoginButton';
+import LoginButton from '../Login-ui/LoginButton';
 import LoginInput from './LoginInput';
 import LoginTabs, { LoginMode } from './LoginTabs';
 

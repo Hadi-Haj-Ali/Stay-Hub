@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export type PendingHouse = {
   id: string;
@@ -11,29 +11,42 @@ export type PendingHouse = {
 
 type Props = {
   houses: PendingHouse[];
+  onDelete: (id: string) => void;
 };
 
-export default function ProfileRequestsCard({ houses }: Props) {
+export default function ProfileRequestsCard({ houses, onDelete }: Props) {
+  if (houses.length === 0) {
+    return (
+      <View style={styles.emptyBox}>
+        <Text style={styles.emptyTitle}>No pending requests</Text>
+        <Text style={styles.emptyText}>
+          Your house requests will appear here.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>My Requests</Text>
-
-      {houses.length === 0 ? (
-        <Text style={styles.emptyText}>No house requests yet.</Text>
-      ) : (
-        houses.map((house) => (
-          <View key={house.id} style={styles.item}>
-            <View style={styles.top}>
-              <Text style={styles.houseTitle}>{house.title || 'No title'}</Text>
-              <Text style={styles.pending}>Pending</Text>
-            </View>
-
-            <Text style={styles.text}>{house.location || '-'}</Text>
-            <Text style={styles.text}>{house.price || '-'}</Text>
-            <Text style={styles.type}>{house.type || 'No type'}</Text>
+      {houses.map((house) => (
+        <View key={house.id} style={styles.item}>
+          <View style={styles.top}>
+            <Text style={styles.houseTitle}>{house.title || 'No title'}</Text>
+            <Text style={styles.pending}>Pending</Text>
           </View>
-        ))
-      )}
+
+          <Text style={styles.text}>{house.location || '-'}</Text>
+          <Text style={styles.text}>{house.price || '-'}</Text>
+          <Text style={styles.type}>{house.type || 'No type'}</Text>
+
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={() => onDelete(house.id)}
+          >
+            <Text style={styles.deleteText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
     </View>
   );
 }
@@ -47,15 +60,26 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 24,
   },
-  title: {
-    fontSize: 17,
+  emptyBox: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    borderRadius: 20,
+    paddingVertical: 45,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    elevation: 2,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 18,
     fontWeight: '800',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   emptyText: {
     color: '#64748B',
     fontSize: 14,
+    textAlign: 'center',
   },
   item: {
     paddingVertical: 12,
@@ -89,5 +113,18 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 12,
     marginLeft: 8,
+  },
+  deleteBtn: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: '#FEE2E2',
+  },
+  deleteText: {
+    color: '#DC2626',
+    fontWeight: '800',
+    fontSize: 13,
   },
 });

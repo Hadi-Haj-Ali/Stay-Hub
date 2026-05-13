@@ -1,30 +1,35 @@
 import { auth, db } from '@/firebaseConfig';
-import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useFocusEffect } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    query,
-    where,
+  collection,
+  doc,
+  deleteDoc,
+  documentId,
+  getDoc,
+  getDocs,
+  query,
+  where,
 } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
+import ProfileFavoritesCard from '../ui/Profile-ui/ProfileFavoritesCard';
 import ProfileHeader from '../ui/Profile-ui/ProfileHeader';
-import ProfileInfoCard from '../ui/Profile-ui/ProfileInfoCard';
-import ProfileRequestsCard, { PendingHouse } from '../ui/Profile-ui/ProfileRequestsCard';
+import ProfileInfoCard from '../ui/Profile-ui/ProfileInfo';
+import ProfileRequestsCard, { PendingHouse} from '../ui/Profile-ui/ProfileRequestsCard'; 
 import ProfileSettingsCard from '../ui/Profile-ui/ProfileSettingsCard';
 import ProfileStatCard from '../ui/Profile-ui/ProfileStatCard';
+import ProfileTabs, { ProfileTab } from '../ui/Profile-ui/ProfileTabs';
 
 type UserData = {
   name: string;
@@ -33,9 +38,22 @@ type UserData = {
   role: string;
 };
 
+type FavoriteHouse = {
+  id: string;
+  title?: string;
+  price?: string;
+  location?: string;
+  distance?: string;
+  image?: string;
+};
+
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('favorites');
+
   const [pendingHouses, setPendingHouses] = useState<PendingHouse[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [favoriteHouses, setFavoriteHouses] = useState<FavoriteHouse[]>([]);
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -45,8 +63,57 @@ export default function ProfileScreen() {
   });
 
   useEffect(() => {
-    loadUser();
-  }, []);
+  loadUser();
+  loadFavorites();
+}, []);
+
+useFocusEffect(
+  useCallback(() => {
+    const refreshData = async () => {
+      const user = auth.currentUser;
+
+      await loadFavorites();
+
+      if (user) {
+        await loadPendingHouses(user.uid);
+      }
+    };
+
+    refreshData();
+  }, [])
+
+);;
+  
+
+  const loadFavorites = async () => {
+    const saved = await AsyncStorage.getItem('favorites');
+
+    if (!saved) {
+      return;
+    }
+
+    const ids = JSON.parse(saved) as string[];
+    setFavoriteIds(ids);
+
+    if (ids.length === 0) {
+      setFavoriteHouses([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'housing'),
+      where(documentId(), 'in', ids)
+    );
+
+    const snapshot = await getDocs(q);
+
+    const data = snapshot.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    })) as FavoriteHouse[];
+
+    setFavoriteHouses(data);
+  };
 
   const loadPendingHouses = async (uid: string) => {
     const q = query(
@@ -101,7 +168,17 @@ export default function ProfileScreen() {
       setLoading(false);
     }
   };
+const deletePendingHouse = async (id: string) => {
+  try {
+    await deleteDoc(doc(db, 'pending_housing', id));
 
+    setPendingHouses((prev) =>
+      prev.filter((house) => house.id !== id)
+    );
+  } catch (error) {
+    Alert.alert('Error', 'Could not delete request');
+  }
+};
   const logout = async () => {
     try {
       await signOut(auth);
@@ -138,15 +215,22 @@ export default function ProfileScreen() {
           email={userData.email}
           onBack={() => router.replace('/(tabs)' as any)}
         />
-
-        <View style={styles.statsRow}>
-          <ProfileStatCard number="0" label="Saved" />
-          <ProfileStatCard number="4.8★" label="Rating" />
-        </View>
-
         <ProfileInfoCard userData={userData} />
+        <ProfileTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          pendingCount={pendingHouses.length}
+          favoritesCount={favoriteIds.length}
+        />
 
-        <ProfileRequestsCard houses={pendingHouses} />
+        {activeTab === 'favorites' ? (
+          <ProfileFavoritesCard houses={favoriteHouses} />
+        ) : (
+          <ProfileRequestsCard
+            houses={pendingHouses}
+           onDelete={deletePendingHouse}
+/>
+        )}
 
         <ProfileSettingsCard onLogout={logout} />
       </ScrollView>
@@ -161,11 +245,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 110,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 22,
   },
   center: {
     flex: 1,
