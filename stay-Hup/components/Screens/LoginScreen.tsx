@@ -1,4 +1,5 @@
 import { auth, db } from '@/firebaseConfig';
+import { saveUserId} from '@/secureStore';
 import { router } from 'expo-router';
 import {
   createUserWithEmailAndPassword,
@@ -15,8 +16,8 @@ import {
   Text,
 } from 'react-native';
 
-import LoginHeader from '../ui/Login-ui/LoginHeader';
 import LoginForm from '../ui/Login-ui/LoginForm';
+import LoginHeader from '../ui/Login-ui/LoginHeader';
 import { LoginMode } from '../ui/Login-ui/LoginTabs';
 
 export default function AuthScreen() {
@@ -39,32 +40,37 @@ export default function AuthScreen() {
     setShowPassword(false);
   };
 
-  const signUp = async () => {
-    const result = await createUserWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password.trim()
-    );
+ const signUp = async () => {
+  const result = await createUserWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password.trim()
+  );
 
-    const user = result.user;
+  const user = result.user;
 
-    await setDoc(doc(db, 'users', user.uid), {
-      uid: user.uid,
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      role: 'student',
-      createdAt: serverTimestamp(),
-    });
-  };
+  await saveUserId(user.uid);
+
+  await setDoc(doc(db, 'users', user.uid), {
+    uid: user.uid,
+    name: name.trim(),
+    phone: phone.trim(),
+    email: email.trim(),
+    role: 'student',
+    createdAt: serverTimestamp(),
+  });
+};
 
   const signIn = async () => {
-    await signInWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password.trim()
-    );
-  };
+  const result = await signInWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password.trim()
+  );
+
+  await saveUserId(result.user.uid);
+};
+
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
@@ -87,15 +93,9 @@ export default function AuthScreen() {
       }
 
       clearInputs();
-      router.replace('/(tabs)');
+      router.replace('/(tabs)' as any);
     } catch (error: any) {
-      console.log('AUTH ERROR CODE:', error.code);
-      console.log('AUTH ERROR MESSAGE:', error.message);
-
-      Alert.alert(
-        'Error',
-        `${error.code || 'unknown'}\n${error.message || 'No message'}`
-      );
+      Alert.alert('Error', getAuthErrorMessage(error.code));
     } finally {
       setLoading(false);
     }

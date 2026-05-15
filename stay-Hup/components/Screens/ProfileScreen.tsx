@@ -2,6 +2,7 @@ import { auth, db } from '@/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { signOut } from 'firebase/auth';
+import { removeUserId } from '@/secureStore';
 import {
   collection,
   doc,
@@ -180,13 +181,14 @@ const deletePendingHouse = async (id: string) => {
   }
 };
   const logout = async () => {
-    try {
-      await signOut(auth);
-      router.replace('/Login');
-    } catch (error) {
-      Alert.alert('Error', 'Could not logout');
-    }
-  };
+  try {
+    await removeUserId();
+    await signOut(auth);
+    router.replace('/Login');
+  } catch (error) {
+    Alert.alert('Error', 'Could not logout');
+  }
+};
 
   if (loading) {
     return (

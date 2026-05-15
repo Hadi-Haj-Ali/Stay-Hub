@@ -1,10 +1,15 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import HouseCard from './HouseCard';
 
-export default function HouseList({ houses, favorites, onToggleFavorite }: any) {
+export default function HouseList({
+  houses,
+  favorites,
+  onToggleFavorite,
+  listRef,
+}: any) {
   return (
-    <ScrollView contentContainerStyle={styles.list}>
+    <ScrollView ref={listRef} contentContainerStyle={styles.list}>
       {houses.map((house: any) => (
         <HouseCard
           key={house.id}

@@ -1,7 +1,11 @@
-import { db } from '@/firebaseConfig';
-import { collection, getDocs } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useHouses } from '@/hooks/useHouse';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import FilterChips from '../ui/HomeScreen-ui/FilterChips';
 import HomeHeader from '../ui/HomeScreen-ui/HomeHeader';
@@ -10,57 +14,61 @@ import HouseList from '../ui/HomeScreen-ui/HouseList';
 export default function HomeScreen({ favorites, onToggleFavorite }: any) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
-  const [houses, setHouses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchHouses = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'housing'));
+  const listRef = useRef<ScrollView>(null);
 
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+  const {
+    data: houses = [],
+    isLoading,
+    isError,
+  } = useHouses();
 
-        setHouses(data);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const changeFilter = useCallback((value: string) => {
+    setFilter(value);
 
-    fetchHouses();
+    listRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
   }, []);
 
-  const filtered = houses.filter((h: any) => {
-    const title = h.title || '';
-    const location = h.location || '';
-    const type = h.type || '';
+  const filteredHouses = useMemo(() => {
+    return houses.filter((house: any) => {
+      const title = house.title?.toLowerCase() || '';
+      const location = house.location?.toLowerCase() || '';
+      const type = house.type?.toLowerCase() || '';
 
-    const matchSearch =
-      title.toLowerCase().includes(search.toLowerCase()) ||
-      location.toLowerCase().includes(search.toLowerCase());
+      const searchText = search.toLowerCase();
 
-    const matchFilter =
-      filter === 'all' ||
-      type.toLowerCase() === filter.toLowerCase();
+      const matchSearch =
+        title.includes(searchText) || location.includes(searchText);
 
-    return matchSearch && matchFilter;
-  });
+      const matchFilter =
+        filter === 'all' || type.includes(filter);
 
-  if (loading) return <Text>Loading...</Text>;
+      return matchSearch && matchFilter;
+    });
+  }, [houses, search, filter]);
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (isError) {
+    return <Text>Could not load houses</Text>;
+  }
 
   return (
     <View style={styles.container}>
       <HomeHeader search={search} setSearch={setSearch} />
-      <FilterChips filter={filter} setFilter={setFilter} />
+
+      <FilterChips filter={filter} setFilter={changeFilter} />
 
       <HouseList
-        houses={filtered}
+        houses={filteredHouses}
         favorites={favorites}
         onToggleFavorite={onToggleFavorite}
+        listRef={listRef}
       />
     </View>
   );

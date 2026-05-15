@@ -12,9 +12,10 @@ import { router } from 'expo-router';
 type Props = {
   search: string;
   setSearch: (text: string) => void;
+  inputRef?: React.RefObject<TextInput | null>;
 };
 
-export default function HomeHeader({ search, setSearch }: Props) {
+export default function HomeHeader({ search, setSearch, inputRef }: Props)  {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning!' : 'Good Evening!';
 
@@ -44,6 +45,7 @@ export default function HomeHeader({ search, setSearch }: Props) {
         <Search size={18} color="#666" />
 
         <TextInput
+        ref={inputRef}
           placeholder="Search..."
           placeholderTextColor="#888"
           value={search}

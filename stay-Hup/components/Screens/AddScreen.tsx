@@ -2,13 +2,14 @@ import { auth, db } from '@/firebaseConfig';
 import { router } from 'expo-router';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 import AddBasicInfo from '../ui/Add-ui/AddBasicInfo';
@@ -17,21 +18,45 @@ import AddContactInfo from '../ui/Add-ui/AddContactInfo';
 import AddExtraInfo from '../ui/Add-ui/AddExtraInfo';
 import AddHeader from '../ui/Add-ui/AddHeader';
 
+type AddFormData = {
+  title: string;
+  description: string;
+  price: string;
+  type: string;
+  location: string;
+  landlordName: string;
+  landlordPhone: string;
+  landlordWhatsapp: string;
+  amenities: string[];
+};
+
 export default function AddScreen() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [type, setType] = useState('');
+  const { watch, setValue, handleSubmit, reset } = useForm<AddFormData>({
+    defaultValues: {
+      title: '',
+      description: '',
+      price: '',
+      type: '',
+      location: '',
+      landlordName: '',
+      landlordPhone: '',
+      landlordWhatsapp: '',
+      amenities: [],
+    },
+  });
 
-  const [location, setLocation] = useState('');
-  const [landlordName, setLandlordName] = useState('');
-  const [landlordPhone, setLandlordPhone] = useState('');
-  const [landlordWhatsapp, setLandlordWhatsapp] = useState('');
-
-  const [amenities, setAmenities] = useState<string[]>([]);
+  const title = watch('title');
+  const description = watch('description');
+  const price = watch('price');
+  const type = watch('type');
+  const location = watch('location');
+  const landlordName = watch('landlordName');
+  const landlordPhone = watch('landlordPhone');
+  const landlordWhatsapp = watch('landlordWhatsapp');
+  const amenities = watch('amenities');
 
   const canGoNext =
     step === 1
@@ -42,27 +67,22 @@ export default function AddScreen() {
 
   const toggleAmenity = (item: string) => {
     if (amenities.includes(item)) {
-      setAmenities(amenities.filter((a) => a !== item));
+      setValue(
+        'amenities',
+        amenities.filter((value) => value !== item)
+      );
       return;
     }
 
-    setAmenities([...amenities, item]);
+    setValue('amenities', [...amenities, item]);
   };
 
   const clearForm = () => {
-    setTitle('');
-    setDescription('');
-    setPrice('');
-    setType('');
-    setLocation('');
-    setLandlordName('');
-    setLandlordPhone('');
-    setLandlordWhatsapp('');
-    setAmenities([]);
+    reset();
     setStep(1);
   };
 
-  const publishHouse = async () => {
+  const publishHouse = async (data: AddFormData) => {
     const user = auth.currentUser;
 
     if (!user) {
@@ -74,18 +94,19 @@ export default function AddScreen() {
       setLoading(true);
 
       await addDoc(collection(db, 'pending_housing'), {
-        title: title.trim(),
-        description: description.trim(),
-        price: price.trim(),
-        type,
-        location: location.trim(),
-        distance: location.trim(),
-        amenities,
+        title: data.title.trim(),
+        description: data.description.trim(),
+        price: data.price.trim(),
+        type: data.type,
+        location: data.location.trim(),
+        distance: data.location.trim(),
+        amenities: data.amenities,
         ownerId: user.uid,
         landlord: {
-          name: landlordName.trim(),
-          phone: landlordPhone.trim(),
-          whatsapp: landlordWhatsapp.trim() || landlordPhone.trim(),
+          name: data.landlordName.trim(),
+          phone: data.landlordPhone.trim(),
+          whatsapp:
+            data.landlordWhatsapp.trim() || data.landlordPhone.trim(),
         },
         createdAt: serverTimestamp(),
       });
@@ -115,26 +136,36 @@ export default function AddScreen() {
           {step === 1 && (
             <AddBasicInfo
               title={title}
-              setTitle={setTitle}
+              setTitle={(value: string) => setValue('title', value)}
               description={description}
-              setDescription={setDescription}
+              setDescription={(value: string) =>
+                setValue('description', value)
+              }
               price={price}
-              setPrice={setPrice}
+              setPrice={(value: string) => setValue('price', value)}
               type={type}
-              setType={setType}
+              setType={(value: string) => setValue('type', value)}
             />
           )}
 
           {step === 2 && (
             <AddContactInfo
               location={location}
-              setLocation={setLocation}
+              setLocation={(value: string) =>
+                setValue('location', value)
+              }
               landlordName={landlordName}
-              setLandlordName={setLandlordName}
+              setLandlordName={(value: string) =>
+                setValue('landlordName', value)
+              }
               landlordPhone={landlordPhone}
-              setLandlordPhone={setLandlordPhone}
+              setLandlordPhone={(value: string) =>
+                setValue('landlordPhone', value)
+              }
               landlordWhatsapp={landlordWhatsapp}
-              setLandlordWhatsapp={setLandlordWhatsapp}
+              setLandlordWhatsapp={(value: string) =>
+                setValue('landlordWhatsapp', value)
+              }
             />
           )}
 
@@ -152,7 +183,7 @@ export default function AddScreen() {
           canGoNext={!!canGoNext}
           onPrev={() => setStep(step - 1)}
           onNext={() => setStep(step + 1)}
-          onSubmit={publishHouse}
+          onSubmit={handleSubmit(publishHouse)}
         />
       </KeyboardAvoidingView>
     </View>
