@@ -1,35 +1,34 @@
 import { auth, db } from '@/firebaseConfig';
+import { removeUserId } from '@/services/secureStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import { removeUserId } from '@/secureStore';
 import {
-  collection,
-  doc,
-  deleteDoc,
-  documentId,
-  getDoc,
-  getDocs,
-  query,
-  where,
+    collection,
+    deleteDoc,
+    doc,
+    documentId,
+    getDoc,
+    getDocs,
+    query,
+    where,
 } from 'firebase/firestore';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
 import ProfileFavoritesCard from '../ui/Profile-ui/ProfileFavoritesCard';
 import ProfileHeader from '../ui/Profile-ui/ProfileHeader';
 import ProfileInfoCard from '../ui/Profile-ui/ProfileInfo';
-import ProfileRequestsCard, { PendingHouse} from '../ui/Profile-ui/ProfileRequestsCard'; 
+import ProfileRequestsCard, { PendingHouse } from '../ui/Profile-ui/ProfileRequestsCard';
 import ProfileSettingsCard from '../ui/Profile-ui/ProfileSettingsCard';
-import ProfileStatCard from '../ui/Profile-ui/ProfileStatCard';
 import ProfileTabs, { ProfileTab } from '../ui/Profile-ui/ProfileTabs';
 
 type UserData = {

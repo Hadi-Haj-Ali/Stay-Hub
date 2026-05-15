@@ -1,19 +1,19 @@
 import { auth, db } from '@/firebaseConfig';
-import { saveUserId} from '@/secureStore';
+import { saveUserId } from '@/services/secureStore';
 import { router } from 'expo-router';
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
 } from 'react-native';
 
 import LoginForm from '../ui/Login-ui/LoginForm';

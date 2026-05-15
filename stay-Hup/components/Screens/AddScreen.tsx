@@ -147,7 +147,6 @@ export default function AddScreen() {
               setType={(value: string) => setValue('type', value)}
             />
           )}
-
           {step === 2 && (
             <AddContactInfo
               location={location}
@@ -189,7 +188,6 @@ export default function AddScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,
