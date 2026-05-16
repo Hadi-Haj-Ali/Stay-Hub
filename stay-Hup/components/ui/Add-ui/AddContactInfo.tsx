@@ -1,5 +1,6 @@
+import { MapPin } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import AddInput from './AddInput';
 
@@ -15,6 +16,8 @@ type Props = {
 
   landlordWhatsapp: string;
   setLandlordWhatsapp: (value: string) => void;
+
+  onUseLocation: () => void;
 };
 
 export default function AddContactInfo({
@@ -26,6 +29,7 @@ export default function AddContactInfo({
   setLandlordPhone,
   landlordWhatsapp,
   setLandlordWhatsapp,
+  onUseLocation,
 }: Props) {
   return (
     <View style={styles.card}>
@@ -37,6 +41,11 @@ export default function AddContactInfo({
         value={location}
         onChangeText={setLocation}
       />
+
+      <TouchableOpacity style={styles.locationBtn} onPress={onUseLocation}>
+        <MapPin size={18} color="#2F4CB3" />
+        <Text style={styles.locationText}>Use Current Location</Text>
+      </TouchableOpacity>
 
       <AddInput
         label="Your Name *"
@@ -76,5 +85,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111827',
     marginBottom: 16,
+  },
+  locationBtn: {
+    height: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    backgroundColor: '#EFF6FF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  locationText: {
+    color: '#2F4CB3',
+    fontSize: 14,
+    fontWeight: '800',
+    marginLeft: 7,
   },
 });

@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 
 import { useProfileData } from '@/hooks/useProfileData';
-
+import { useHousingTip } from '@/hooks/useHousingTip';
+import ProfileTipCard from '../ui/Profile-ui/ProfileTipCard';
 import ProfileFavoritesCard from '../ui/Profile-ui/ProfileFavoritesCard';
 import ProfileHeader from '../ui/Profile-ui/ProfileHeader';
 import ProfileInfoCard from '../ui/Profile-ui/ProfileInfo';
@@ -20,7 +21,7 @@ import ProfileTabs, { ProfileTab } from '../ui/Profile-ui/ProfileTabs';
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<ProfileTab>('favorites');
-
+  const { tip, loading: tipLoading } = useHousingTip();
   const {
     loading,
     userData,
@@ -60,6 +61,8 @@ export default function ProfileScreen() {
         />
 
         <ProfileInfoCard userData={userData} />
+        
+        <ProfileTipCard tip={tip} loading={tipLoading} />
 
         <ProfileTabs
           activeTab={activeTab}

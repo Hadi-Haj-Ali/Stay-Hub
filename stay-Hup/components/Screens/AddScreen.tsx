@@ -41,13 +41,14 @@ export default function AddScreen() {
 
           {form.step === 2 && (
             <AddContactStep
-              location={form.location}
-              landlordName={form.landlordName}
-              landlordPhone={form.landlordPhone}
-              landlordWhatsapp={form.landlordWhatsapp}
-              setValue={form.setValue}
+             location={form.location}
+             landlordName={form.landlordName}
+            landlordPhone={form.landlordPhone}
+            landlordWhatsapp={form.landlordWhatsapp}
+            setValue={form.setValue}
+            onUseLocation={form.useCurrentLocation}
             />
-          )}
+)}
 
           {form.step === 3 && (
             <AddExtraStep
@@ -64,6 +65,7 @@ export default function AddScreen() {
           onPrev={() => form.setStep(form.step - 1)}
           onNext={() => form.setStep(form.step + 1)}
           onSubmit={form.handleSubmit(form.submitHouse)}
+          onSaveDraft={form.saveOfflineDraft}
         />
       </KeyboardAvoidingView>
     </View>

@@ -1,6 +1,5 @@
 import { auth, db } from '@/firebaseConfig';
 import { removeUserId } from '@/services/secureStore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signOut } from 'firebase/auth';
 import {
   collection,
@@ -78,23 +77,9 @@ export async function deletePendingHouse(id: string) {
   await deleteDoc(doc(db, 'pending_housing', id));
 }
 
-export async function getFavoriteHouses() {
-  const saved = await AsyncStorage.getItem('favorites');
-
-  if (!saved) {
-    return {
-      ids: [],
-      houses: [],
-    };
-  }
-
-  const ids = JSON.parse(saved) as string[];
-
+export async function getFavoriteHousesByIds(ids: string[]) {
   if (ids.length === 0) {
-    return {
-      ids,
-      houses: [],
-    };
+    return [];
   }
 
   const q = query(
@@ -104,15 +89,10 @@ export async function getFavoriteHouses() {
 
   const snapshot = await getDocs(q);
 
-  const houses = snapshot.docs.map((item) => ({
+  return snapshot.docs.map((item) => ({
     id: item.id,
     ...item.data(),
   })) as FavoriteHouse[];
-
-  return {
-    ids,
-    houses,
-  };
 }
 
 export async function logoutUser() {

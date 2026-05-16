@@ -1,4 +1,5 @@
 import { auth } from '@/firebaseConfig';
+import { useFavorites } from '@/Context/FavoritesContext';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -6,7 +7,7 @@ import { Alert } from 'react-native';
 import {
   deletePendingHouse,
   FavoriteHouse,
-  getFavoriteHouses,
+  getFavoriteHousesByIds,
   getPendingHouses,
   getUserProfile,
   logoutUser,
@@ -17,6 +18,11 @@ import {
 export function useProfileData() {
   const [loading, setLoading] = useState(true);
 
+  const {
+    favoriteIds,
+    loadFavorites,
+  } = useFavorites();
+
   const [userData, setUserData] = useState<UserData>({
     name: '',
     email: '',
@@ -25,14 +31,13 @@ export function useProfileData() {
   });
 
   const [pendingHouses, setPendingHouses] = useState<PendingHouse[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [favoriteHouses, setFavoriteHouses] = useState<FavoriteHouse[]>([]);
 
-  const loadFavorites = async () => {
-    const result = await getFavoriteHouses();
+  const loadFavoriteHouses = async () => {
+    const ids = await loadFavorites();
+    const houses = await getFavoriteHousesByIds(ids);
 
-    setFavoriteIds(result.ids);
-    setFavoriteHouses(result.houses);
+    setFavoriteHouses(houses);
   };
 
   const loadPending = async () => {
@@ -58,7 +63,7 @@ export function useProfileData() {
       setUserData(profile);
 
       await loadPending();
-      await loadFavorites();
+      await loadFavoriteHouses();
     } catch (error) {
       Alert.alert('Error', 'Could not load profile');
     } finally {
@@ -93,7 +98,7 @@ export function useProfileData() {
 
   useFocusEffect(
     useCallback(() => {
-      loadFavorites();
+      loadFavoriteHouses();
       loadPending();
     }, [])
   );

@@ -14,6 +14,7 @@ type Props = {
   onPrev: () => void;
   onNext: () => void;
   onSubmit: () => void;
+  onSaveDraft: () => void;
 };
 
 export default function AddBottomButtons({
@@ -23,48 +24,71 @@ export default function AddBottomButtons({
   onPrev,
   onNext,
   onSubmit,
+  onSaveDraft,
 }: Props) {
   return (
     <View style={styles.bottom}>
-      {step > 1 && (
-        <TouchableOpacity style={styles.prevBtn} onPress={onPrev}>
-          <Text style={styles.prevText}>Previous</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.draftBtn} onPress={onSaveDraft}>
+        <Text style={styles.draftText}>Save Draft Offline</Text>
+      </TouchableOpacity>
 
-      {step < 3 ? (
-        <TouchableOpacity
-          style={[styles.nextBtn, !canGoNext && styles.disabled]}
-          onPress={onNext}
-          disabled={!canGoNext}
-        >
-          <Text style={styles.nextText}>Next</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          style={[styles.nextBtn, loading && styles.disabled]}
-          onPress={onSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.nextText}>Publish House</Text>
-          )}
-        </TouchableOpacity>
-      )}
+      <View style={styles.row}>
+        {step > 1 && (
+          <TouchableOpacity style={styles.prevBtn} onPress={onPrev}>
+            <Text style={styles.prevText}>Previous</Text>
+          </TouchableOpacity>
+        )}
+
+        {step < 3 ? (
+          <TouchableOpacity
+            style={[styles.nextBtn, !canGoNext && styles.disabled]}
+            onPress={onNext}
+            disabled={!canGoNext}
+          >
+            <Text style={styles.nextText}>Next</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.nextBtn, loading && styles.disabled]}
+            onPress={onSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.nextText}>Publish</Text>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   bottom: {
-    flexDirection: 'row',
-    gap: 12,
     padding: 16,
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
+  },
+  draftBtn: {
+    height: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#2F4CB3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  draftText: {
+    color: '#2F4CB3',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
   },
   prevBtn: {
     flex: 1,

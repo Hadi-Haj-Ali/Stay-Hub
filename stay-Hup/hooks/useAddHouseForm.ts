@@ -4,24 +4,27 @@ import { useForm } from 'react-hook-form';
 import { Alert } from 'react-native';
 
 import { AddFormData, addPendingHouse } from '@/services/addHouseService';
+import { getCurrentLocationText } from '@/services/locationService';
+import { saveHouseDraftOffline } from '@/offlineHouseDraftsDb';
 
 export function useAddHouseForm() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const { watch, setValue, handleSubmit, reset } = useForm<AddFormData>({
-    defaultValues: {
-      title: '',
-      description: '',
-      price: '',
-      type: '',
-      location: '',
-      landlordName: '',
-      landlordPhone: '',
-      landlordWhatsapp: '',
-      amenities: [],
-    },
-  });
+  const { watch, setValue, handleSubmit, reset, getValues } =
+    useForm<AddFormData>({
+      defaultValues: {
+        title: '',
+        description: '',
+        price: '',
+        type: '',
+        location: '',
+        landlordName: '',
+        landlordPhone: '',
+        landlordWhatsapp: '',
+        amenities: [],
+      },
+    });
 
   const title = watch('title');
   const description = watch('description');
@@ -33,7 +36,7 @@ export function useAddHouseForm() {
   const landlordPhone = watch('landlordPhone');
   const landlordWhatsapp = watch('landlordWhatsapp');
 
-  const amenities = watch('amenities');
+  const amenities = watch('amenities') || [];
 
   const canGoNext =
     step === 1
@@ -52,6 +55,32 @@ export function useAddHouseForm() {
     }
 
     setValue('amenities', [...amenities, item]);
+  };
+
+  const useCurrentLocation = async () => {
+    try {
+      const locationText = await getCurrentLocationText();
+      setValue('location', locationText);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Could not get location');
+    }
+  };
+
+  const saveOfflineDraft = async () => {
+    try {
+      const data = getValues();
+
+      if (!data.title.trim()) {
+        Alert.alert('Missing Title', 'Please enter a title before saving draft');
+        return;
+      }
+
+      await saveHouseDraftOffline(data);
+
+      Alert.alert('Saved', 'Draft saved offline using SQLite');
+    } catch (error) {
+      Alert.alert('Error', 'Could not save offline draft');
+    }
   };
 
   const submitHouse = async (data: AddFormData) => {
@@ -75,20 +104,26 @@ export function useAddHouseForm() {
     step,
     setStep,
     loading,
+
     setValue,
     handleSubmit,
     submitHouse,
+
     canGoNext,
     toggleAmenity,
+    useCurrentLocation,
+    saveOfflineDraft,
 
     title,
     description,
     price,
     type,
+
     location,
     landlordName,
     landlordPhone,
     landlordWhatsapp,
+
     amenities,
   };
 }
