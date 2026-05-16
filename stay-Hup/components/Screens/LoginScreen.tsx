@@ -1,110 +1,16 @@
-import { auth, db } from '@/firebaseConfig';
-import { saveUserId } from '@/services/secureStore';
-import { router } from 'expo-router';
+import React from 'react';
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import React, { useState } from 'react';
-import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
 } from 'react-native';
-
+import { useAuthForm } from '@/hooks/useLoginForm';
 import LoginForm from '../ui/Login-ui/LoginForm';
 import LoginHeader from '../ui/Login-ui/LoginHeader';
-import { LoginMode } from '../ui/Login-ui/LoginTabs';
-
 export default function AuthScreen() {
-  const [mode, setMode] = useState<LoginMode>('signin');
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const isSignUp = mode === 'signup';
-
-  const clearInputs = () => {
-    setName('');
-    setPhone('');
-    setEmail('');
-    setPassword('');
-    setShowPassword(false);
-  };
-
- const signUp = async () => {
-  const result = await createUserWithEmailAndPassword(
-    auth,
-    email.trim(),
-    password.trim()
-  );
-
-  const user = result.user;
-
-  await saveUserId(user.uid);
-
-  await setDoc(doc(db, 'users', user.uid), {
-    uid: user.uid,
-    name: name.trim(),
-    phone: phone.trim(),
-    email: email.trim(),
-    role: 'student',
-    createdAt: serverTimestamp(),
-  });
-};
-
-  const signIn = async () => {
-  const result = await signInWithEmailAndPassword(
-    auth,
-    email.trim(),
-    password.trim()
-  );
-
-  await saveUserId(result.user.uid);
-};
-
-
-  const handleSubmit = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing Fields', 'Please enter your email and password');
-      return;
-    }
-
-    if (isSignUp && (!name.trim() || !phone.trim())) {
-      Alert.alert('Missing Fields', 'Please enter your name and phone number');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      if (isSignUp) {
-        await signUp();
-      } else {
-        await signIn();
-      }
-
-      clearInputs();
-      router.replace('/(tabs)' as any);
-    } catch (error: any) {
-      Alert.alert('Error', getAuthErrorMessage(error.code));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const changeMode = (newMode: LoginMode) => {
-    setMode(newMode);
-    setShowPassword(false);
-  };
+  const authForm = useAuthForm();
 
   return (
     <KeyboardAvoidingView
@@ -115,23 +21,23 @@ export default function AuthScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <LoginHeader isSignUp={isSignUp} />
+        <LoginHeader isSignUp={authForm.isSignUp} />
 
         <LoginForm
-          mode={mode}
-          setMode={changeMode}
-          name={name}
-          setName={setName}
-          phone={phone}
-          setPhone={setPhone}
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-          loading={loading}
-          onSubmit={handleSubmit}
+          mode={authForm.mode}
+          setMode={authForm.changeMode}
+          name={authForm.name}
+          setName={authForm.setName}
+          phone={authForm.phone}
+          setPhone={authForm.setPhone}
+          email={authForm.email}
+          setEmail={authForm.setEmail}
+          password={authForm.password}
+          setPassword={authForm.setPassword}
+          showPassword={authForm.showPassword}
+          setShowPassword={authForm.setShowPassword}
+          loading={authForm.loading}
+          onSubmit={authForm.handleSubmit}
         />
 
         <Text style={styles.terms}>
@@ -140,30 +46,6 @@ export default function AuthScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
-
-function getAuthErrorMessage(code: string) {
-  if (code === 'auth/email-already-in-use') {
-    return 'This email is already used.';
-  }
-
-  if (code === 'auth/invalid-email') {
-    return 'Please enter a valid email.';
-  }
-
-  if (code === 'auth/weak-password') {
-    return 'Password should be at least 6 characters.';
-  }
-
-  if (
-    code === 'auth/invalid-credential' ||
-    code === 'auth/wrong-password' ||
-    code === 'auth/user-not-found'
-  ) {
-    return 'Email or password is incorrect.';
-  }
-
-  return 'Something went wrong. Please try again.';
 }
 
 const styles = StyleSheet.create({
