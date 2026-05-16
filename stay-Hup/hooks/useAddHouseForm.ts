@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { AddFormData, addPendingHouse } from '@/services/addHouseService';
 import { getCurrentLocationText } from '@/services/locationService';
@@ -10,6 +11,8 @@ import { saveHouseDraftOffline } from '@/offlineHouseDraftsDb';
 export function useAddHouseForm() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const { watch, setValue, handleSubmit, reset, getValues } =
     useForm<AddFormData>({
@@ -26,15 +29,15 @@ export function useAddHouseForm() {
       },
     });
 
-  const title = watch('title');
-  const description = watch('description');
-  const price = watch('price');
-  const type = watch('type');
+  const title = watch('title') || '';
+  const description = watch('description') || '';
+  const price = watch('price') || '';
+  const type = watch('type') || '';
 
-  const location = watch('location');
-  const landlordName = watch('landlordName');
-  const landlordPhone = watch('landlordPhone');
-  const landlordWhatsapp = watch('landlordWhatsapp');
+  const location = watch('location') || '';
+  const landlordName = watch('landlordName') || '';
+  const landlordPhone = watch('landlordPhone') || '';
+  const landlordWhatsapp = watch('landlordWhatsapp') || '';
 
   const amenities = watch('amenities') || [];
 
@@ -70,7 +73,7 @@ export function useAddHouseForm() {
     try {
       const data = getValues();
 
-      if (!data.title.trim()) {
+      if (!data.title?.trim()) {
         Alert.alert('Missing Title', 'Please enter a title before saving draft');
         return;
       }
@@ -89,7 +92,11 @@ export function useAddHouseForm() {
 
       await addPendingHouse(data);
 
-      Alert.alert('Done', 'Request sent');
+      await queryClient.invalidateQueries({
+        queryKey: ['houses'],
+      });
+
+      Alert.alert('Done', 'House added successfully');
       reset();
       setStep(1);
       router.replace('/(tabs)' as any);
